@@ -9,7 +9,6 @@ import {
   LayoutDashboard,
   FlaskConical,
   BookMarked,
-  Settings,
   X,
   Zap,
 } from "lucide-react";
@@ -32,11 +31,6 @@ const NAV_ITEMS = [
     label: "Experiments",
     href: "/experiments",
     icon: BookMarked,
-  },
-  {
-    label: "Settings",
-    href: "/settings",
-    icon: Settings,
   },
 ];
 

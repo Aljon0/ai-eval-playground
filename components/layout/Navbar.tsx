@@ -22,10 +22,6 @@ const PAGE_TITLES: Record<string, { title: string; description: string }> = {
     title: "Experiments",
     description: "Browse and manage your saved runs",
   },
-  "/settings": {
-    title: "Settings",
-    description: "Configure models, API keys, and preferences",
-  },
 };
 
 // ─── Props ─────────────────────────────────────────────────────────────────
