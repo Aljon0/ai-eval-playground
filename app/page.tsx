@@ -1,65 +1,148 @@
-import Image from "next/image";
+// app/page.tsx
+// Dashboard — overview of activity, stats, and recent experiments
+// Updated: now pulls real stats and recent experiments from backend
+// via useDashboard() instead of computing locally from experiments array.
 
-export default function Home() {
+"use client";
+
+import {
+  FlaskConical,
+  Zap,
+  BarChart3,
+  Clock,
+  ArrowRight,
+} from "lucide-react";
+import Link from "next/link";
+import { StatsCard } from "@/components/dashboard/StatsCard";
+import { RecentExperiments } from "@/components/dashboard/RecentExperiments";
+import { ModelUsageChart } from "@/components/dashboard/ModelUsageChart";
+import { useDashboard } from "@/hooks/useExperiments";
+import { AVAILABLE_MODELS, formatLatency } from "@/lib/utils";
+
+// ─── Component ─────────────────────────────────────────────────────────────
+
+export default function DashboardPage() {
+  // useDashboard fetches /api/dashboard/stats and /api/dashboard/recent
+  // in parallel on mount — no local computation needed.
+  const { stats, recentExperiments, isLoading } = useDashboard();
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="space-y-6 md:space-y-8">
+
+      {/* ── Page header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center
+                      sm:justify-between gap-4">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+            Welcome back 👋
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-sm text-gray-500 mt-1">
+            Here&apos;s an overview of your AI evaluation activity.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        {/* CTA */}
+        <Link
+          href="/playground"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl
+                     bg-gray-900 text-white text-sm font-semibold
+                     hover:bg-gray-700 transition-colors shadow-sm
+                     self-start sm:self-auto shrink-0"
+        >
+          <Zap size={15} />
+          New Evaluation
+        </Link>
+      </div>
+
+      {/* ── Stats cards ── */}
+      {/* Each card now reads from the backend stats object */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <StatsCard
+          title="Total Runs"
+          value={isLoading ? "—" : stats?.totalRuns ?? 0}
+          subtitle="Saved experiments"
+          icon={FlaskConical}
+          trend={
+            stats?.totalRuns && stats.totalRuns > 0
+              ? { value: "active", positive: true }
+              : undefined
+          }
+        />
+        <StatsCard
+          title="Models Used"
+          value={isLoading ? "—" : stats?.modelsUsed ?? 0}
+          subtitle={`of ${AVAILABLE_MODELS.length} available`}
+          icon={BarChart3}
+        />
+        <StatsCard
+          title="Avg Latency"
+          value={
+            isLoading
+              ? "—"
+              : stats?.avgLatencyMs && stats.avgLatencyMs > 0
+              ? formatLatency(stats.avgLatencyMs)
+              : "N/A"
+          }
+          subtitle="Across all results"
+          icon={Clock}
+        />
+        <StatsCard
+          title="Evaluations"
+          value={isLoading ? "—" : stats?.totalEvaluations ?? 0}
+          subtitle="Total model responses"
+          icon={Zap}
+        />
+      </div>
+
+      {/* ── Quick start banner (shown when no experiments yet) ── */}
+      {!isLoading && (!stats || stats.totalRuns === 0) && (
+        <div
+          className="rounded-xl border border-dashed border-gray-200
+                      bg-white p-6 md:p-8 text-center"
+        >
+          <div
+            className="w-12 h-12 rounded-2xl bg-gray-50 border border-gray-100
+                        flex items-center justify-center mx-auto mb-4"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <Zap size={22} className="text-gray-400" strokeWidth={1.5} />
+          </div>
+          <h3 className="text-base font-semibold text-gray-900 mb-1">
+            Run your first evaluation
+          </h3>
+          <p className="text-sm text-gray-500 max-w-sm mx-auto mb-5">
+            Head to the Playground, enter a prompt, select models, and hit Run
+            to start comparing AI responses side by side.
+          </p>
+          <Link
+            href="/playground"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl
+                       bg-gray-900 text-white text-sm font-semibold
+                       hover:bg-gray-700 transition-colors"
           >
-            Documentation
-          </a>
+            Open Playground
+            <ArrowRight size={14} />
+          </Link>
         </div>
-      </main>
+      )}
+
+      {/* ── Main content grid ── */}
+      {/* Uses recentExperiments from backend instead of full experiments list */}
+      {(isLoading || recentExperiments.length > 0) && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+          {/* Recent experiments — takes 2/3 width on large screens */}
+          <div className="lg:col-span-2">
+            <RecentExperiments
+              experiments={recentExperiments}
+              isLoading={isLoading}
+            />
+          </div>
+
+          {/* Model usage chart — takes 1/3 width */}
+          <div className="lg:col-span-1">
+            <ModelUsageChart experiments={recentExperiments} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
