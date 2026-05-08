@@ -3,16 +3,16 @@
 
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 import {
-  LayoutDashboard,
-  FlaskConical,
   BookMarked,
+  FlaskConical,
+  LayoutDashboard,
   X,
   Zap,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 // ─── Nav Items ─────────────────────────────────────────────────────────────
 
@@ -66,7 +66,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           // Mobile: slide in/out
           isOpen ? "translate-x-0" : "-translate-x-full",
           // Desktop: always visible, static
-          "lg:static lg:translate-x-0 lg:z-auto"
+          "lg:static lg:translate-x-0 lg:z-auto",
         )}
         aria-label="Sidebar navigation"
       >
@@ -124,7 +124,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   "transition-all duration-150 group",
                   isActive
                     ? "bg-gray-900 text-white font-medium shadow-sm"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
                 )}
                 aria-current={isActive ? "page" : undefined}
               >
@@ -134,7 +134,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     "shrink-0 transition-colors",
                     isActive
                       ? "text-white"
-                      : "text-gray-400 group-hover:text-gray-700"
+                      : "text-gray-400 group-hover:text-gray-700",
                   )}
                 />
                 {label}
@@ -142,18 +142,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             );
           })}
         </nav>
-
-        {/* ── Footer ── */}
-        <div className="px-4 py-4 border-t border-gray-100">
-          <div className="rounded-xl bg-gray-50 p-3.5">
-            <p className="text-xs font-medium text-gray-700 mb-0.5">
-              v1.0.0 — Beta
-            </p>
-            <p className="text-[11px] text-gray-400 leading-snug">
-              Frontend only. Connect your backend to activate live model calls.
-            </p>
-          </div>
-        </div>
       </aside>
     </>
   );
