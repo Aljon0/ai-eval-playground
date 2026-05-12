@@ -5,6 +5,8 @@
 
 import { useState } from "react";
 import { Clock, Hash, Copy, Check, ChevronDown, ChevronUp } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { cn, formatLatency, MODEL_MAP } from "@/lib/utils";
 import { StatusBadge, ModelDot } from "@/components/ui/Badge";
 import { ResultCardSkeleton } from "@/components/ui/Loader";
@@ -16,9 +18,52 @@ import type { ModelResult, ModelId } from "@/types";
 interface ResultCardProps {
   result: ModelResult;
   isFastest?: boolean;
-  onRate: (modelId: ModelId, rating: number, experimentId?: string) => void
+  onRate: (modelId: ModelId, rating: number, experimentId?: string) => void;
   className?: string;
 }
+
+// ─── Markdown prose styles ──────────────────────────────────────────────────
+// Applied via className on the ReactMarkdown wrapper div
+
+const proseClass = cn(
+  "text-sm text-gray-700 leading-relaxed space-y-3",
+  // Headings
+  "[&_h1]:text-base [&_h1]:font-bold [&_h1]:text-gray-900 [&_h1]:mt-4 [&_h1]:mb-1",
+  "[&_h2]:text-sm  [&_h2]:font-bold [&_h2]:text-gray-900 [&_h2]:mt-4 [&_h2]:mb-1",
+  "[&_h3]:text-sm  [&_h3]:font-semibold [&_h3]:text-gray-800 [&_h3]:mt-3 [&_h3]:mb-1",
+  // Paragraphs
+  "[&_p]:leading-relaxed [&_p]:text-gray-700",
+  // Bold / italic
+  "[&_strong]:font-semibold [&_strong]:text-gray-900",
+  "[&_em]:italic [&_em]:text-gray-600",
+  // Unordered lists
+  "[&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1",
+  "[&_ul_li]:text-gray-700 [&_ul_li]:leading-snug",
+  // Ordered lists
+  "[&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-1",
+  "[&_ol_li]:text-gray-700 [&_ol_li]:leading-snug",
+  // Inline code
+  "[&_code]:bg-gray-100 [&_code]:text-gray-800 [&_code]:rounded",
+  "[&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[12px] [&_code]:font-mono",
+  // Code blocks
+  "[&_pre]:bg-gray-950 [&_pre]:text-gray-100 [&_pre]:rounded-xl",
+  "[&_pre]:px-4 [&_pre]:py-3.5 [&_pre]:overflow-x-auto [&_pre]:text-[12px]",
+  "[&_pre]:leading-relaxed [&_pre_code]:bg-transparent [&_pre_code]:p-0",
+  "[&_pre_code]:text-gray-100 [&_pre_code]:font-mono",
+  // Blockquotes
+  "[&_blockquote]:border-l-2 [&_blockquote]:border-gray-200",
+  "[&_blockquote]:pl-4 [&_blockquote]:text-gray-500 [&_blockquote]:italic",
+  // Horizontal rule
+  "[&_hr]:border-gray-100 [&_hr]:my-3",
+  // Tables (from remark-gfm)
+  "[&_table]:w-full [&_table]:text-xs [&_table]:border-collapse",
+  "[&_th]:text-left [&_th]:font-semibold [&_th]:text-gray-700",
+  "[&_th]:border [&_th]:border-gray-200 [&_th]:px-3 [&_th]:py-2 [&_th]:bg-gray-50",
+  "[&_td]:border [&_td]:border-gray-200 [&_td]:px-3 [&_td]:py-2 [&_td]:text-gray-600",
+  // Links
+  "[&_a]:text-blue-600 [&_a]:underline [&_a]:underline-offset-2",
+  "[&_a:hover]:text-blue-800"
+);
 
 // ─── Component ─────────────────────────────────────────────────────────────
 
@@ -62,7 +107,9 @@ export function ResultCard({
         className={cn(
           "flex items-center justify-between px-4 py-3.5",
           "border-b",
-          isError ? "border-red-50 bg-red-50/40" : "border-gray-50 bg-gray-50/60"
+          isError
+            ? "border-red-50 bg-red-50/40"
+            : "border-gray-50 bg-gray-50/60"
         )}
       >
         {/* Model identity */}
@@ -121,9 +168,12 @@ export function ResultCard({
               </p>
             ) : (
               <>
-                <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
-                  {result.response}
-                </p>
+                {/* ✅ Markdown rendered response */}
+                <div className={proseClass}>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {result.response}
+                  </ReactMarkdown>
+                </div>
 
                 {/* Copy button — appears on hover */}
                 <button
